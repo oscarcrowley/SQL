@@ -1,0 +1,452 @@
+import random
+
+def create_deck():
+
+    suits = ["Hearts","Clubs","Spades","Diamonds"]
+    numbers = ["Ace","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Jack","Queen","King"]
+    global deck
+    deck = []
+    for number in numbers:
+        for suit in suits:
+            card = [number,suit]
+            deck.append(card)
+
+    starting_money = 100
+    player_hand = []
+
+    computer_money_1 = 100
+    global computer_hand_1
+    computer_hand_1 = []
+    computer_money_2 = 100
+    global computer_hand_2
+    computer_hand_2 = []
+    computer_money_3 = 100
+    global computer_hand_3
+    computer_hand_3 = []
+
+    global blinds
+    blinds = ["Player","C1","C2","C3"]
+    global small
+    small = 0
+
+    for x in range(2):
+        r1a = random.randint(0,len(deck))
+        player_hand.append(deck[r1a])
+        deck.remove(deck[r1a])
+
+        r1b = random.randint(0,len(deck))
+        computer_hand_1.append(deck[r1b])
+        deck.remove(deck[r1b])
+
+        r1c = random.randint(0,len(deck))
+        computer_hand_2.append(deck[r1c])
+        deck.remove(deck[r1c])
+
+        r1d = random.randint(0,len(deck))
+        computer_hand_3.append(deck[r1d])
+        deck.remove(deck[r1d])
+
+
+
+    print("Player:")
+    print(player_hand)
+    print("\n")
+
+
+    #print("Computer One:")
+    #print(computer_hand_1)
+    #print("Computer Two:")
+    #print(computer_hand_2)
+    #print("Computer Three:")
+    #print(computer_hand_3)
+
+
+    calculate(computer_hand_1)
+    calculate(computer_hand_2)
+    calculate(computer_hand_3)
+
+    #bet_1 = input("Play?")
+
+    flop()
+    turn()
+    #river()
+
+
+def calculate(array):
+
+    global face_values
+    face_values = {
+		"Ace" : 1,
+		"Two" : 2,
+		"Three" : 3,
+		"Four" : 4,
+		"Five" : 5,
+		"Six" : 6,
+        "Seven" : 7,
+        "Eight" : 8,
+        "Nine" : 9,
+        "Ten" : 10,
+        "Jack" : 11,
+        "Queen" : 12,
+        "King" : 13}
+
+    confidence = 0
+    print(array)
+    values = []
+    suits = []
+    straight_check = []
+
+    for elements in array:
+
+        #print(elements[0])
+
+        for key, value in face_values.items():
+            if key == elements[0]:
+                straight_check.append(value)
+                #print(value)
+
+        values.append(elements[0])
+        #print(elements[0]) #Value
+        suits.append(elements[1])
+        #print(elements[1]) #Suit
+
+    for elements in values:
+        if elements == "Ace":
+            #print("Ace")
+            confidence = confidence + 10
+        if elements == "Jack":
+            #print("Jack")
+            confidence = confidence + 4
+        if elements == "Queen":
+            #print("Queen")
+            confidence = confidence + 6
+        if elements == "King":
+            #print("King")
+            confidence = confidence + 8
+
+    if values[0] == values[1]:
+        print("Pair")
+        confidence = confidence + 100
+    if suits[0] == suits[1]:
+        print("Same Suit")
+        confidence = confidence + 40
+
+    #print(straight_check)
+
+
+
+
+    if abs(straight_check[0] - straight_check[1]) <= 1:
+        print("Straight")
+        confidence = confidence + 15
+
+
+    print("Score:")
+    print(confidence)
+
+
+    #Testing:
+    #King Hearts, King Clubs = 130
+    #Ten Diamonds, Ten Hearts = 100
+
+
+def flop():
+    print("----------------------------FLOP--------------------------------------")
+    global c1
+    c1 = computer_hand_1
+    global c2
+    c2 = computer_hand_2
+    global c3
+    c3 = computer_hand_3
+
+    flop_array = []
+    for x in range(3):
+        r = random.randint(0,len(deck))
+        flop_array.append(deck[r])
+        deck.remove(deck[r])
+
+    #print(flop_array)
+    c1 = c1 + flop_array
+    c2 = c2 + flop_array
+    c3 = c3 + flop_array
+
+    calculate_flop(c1)
+    calculate_flop(c2)
+    calculate_flop(c3)
+
+def calculate_flop(hand):
+    print("\n")
+    print("Hand:")
+    print(hand)
+
+    confidence_flop = 0
+
+    numeric_values = []
+    pairs_ = []
+    suit_values = []
+    straight_ = []
+    three_kind = []
+    high_card = []
+
+    for x,y in hand:
+        #print(x,y)
+
+        for key, value in face_values.items():
+            if key == x:
+                numeric_values.append(value)
+                #print(value)
+
+    #print(numeric_values)
+    high_card.append(max(numeric_values))
+
+    #Pairs
+    for i in range(1,13):
+        if numeric_values.count(i) == 2 :
+            #print(numeric_values.count(i))
+            pairs_.append(i)
+            if numeric_values.count(i) == 3:
+                print("Three of a kind")
+                three_kind.append(i)
+
+
+    #Straight
+    for x,y in hand:
+        suit_values.append(y)
+
+    if suit_values.count("Hearts") == 5 or suit_values.count("Spades") == 5 or suit_values.count("Clubs") == 5 or suit_values.count("Diamonds") == 5:
+        print("Straight")
+        straight_.append("Straight")
+
+    if len(pairs_) != 0:
+        confidence_flop = confidence_flop + 50 + pairs_[0]
+        if len(pairs_) == 2:
+            confidence_flop = confidence_flop + 120 + pairs_[0]
+        if len(pairs_) > 2:
+            print(pairs_[-2:])
+        else:
+            print("Pairs:")
+            print(pairs_)
+    if len(three_kind) != 0 :
+        confidence_flop = confidence_flop + 150
+        print("Three of a Kind:")
+        print(three_kind)
+    if len(straight_) != 0:
+        confidence_flop = confidence_flop + 200
+        print("Straight:")
+        print(straight_)
+
+    if len(pairs_) != 0 and pairs_[0] == 1:
+        confidence_flop = confidence_flop + 10
+
+    #if len(pairs_) == 0 and len(three_kind) == 0 and len(straight_) == 0:
+    print("High Card:")
+    print(high_card)
+    confidence_flop = confidence_flop + round(high_card[0] / 2)
+
+
+    print("Confidence:")
+    print(confidence_flop)
+
+
+
+    #Testing:
+    #High Card: [13]
+    #One Pair: [4]
+    #Two Pairs: [4, 5]
+
+
+def turn():
+
+    print("----------------------------TURN--------------------------------------")
+
+    turn_array = []
+    r = random.randint(0,len(deck))
+    turn_array.append(deck[r])
+    deck.remove(deck[r])
+
+    #print(flop_array)
+    global c1_turn
+    c1_turn = c1 + turn_array
+    global c2_turn
+    c2_turn = c2 + turn_array
+    global c3_turn
+    c3_turn = c3 + turn_array
+
+    calculate_turn(c1_turn)
+    calculate_turn(c2_turn)
+    calculate_turn(c3_turn)
+
+def calculate_turn(hand):
+    print("\n")
+    print("Hand:")
+    print(hand)
+
+    confidence_turn = 0
+
+    numeric_values = []
+    pairs_ = []
+    suit_values = []
+    straight_ = []
+    three_kind = []
+    high_card = []
+
+    for x,y in hand:
+        #print(x,y)
+
+        for key, value in face_values.items():
+            if key == x:
+                numeric_values.append(value)
+                #print(value)
+
+    #print(numeric_values)
+    high_card.append(max(numeric_values))
+
+    #Pairs
+    for i in range(1,13):
+        if numeric_values.count(i) == 2 :
+            #print(numeric_values.count(i))
+            pairs_.append(i)
+            if numeric_values.count(i) == 3:
+                print("Three of a kind")
+                three_kind.append(i)
+
+
+    #Straight
+    for x,y in hand:
+        suit_values.append(y)
+
+    if suit_values.count("Hearts") >= 5 or suit_values.count("Spades") >= 5 or suit_values.count("Clubs") >= 5 or suit_values.count("Diamonds") >= 5:
+        print("Straight")
+        straight_.append("Straight")
+
+    if len(pairs_) != 0:
+        confidence_turn = confidence_turn + 50 + pairs_[0]
+        if len(pairs_) == 2:
+            confidence_turn = confidence_turn + 120 + pairs_[0]
+
+        print("Pairs:")
+        print(pairs_)
+    if len(three_kind) != 0 :
+        confidence_turn = confidence_turn + 150
+        print("Three of a Kind:")
+        print(three_kind)
+    if len(straight_) != 0:
+        confidence_turn = confidence_turn + 200
+        print("Straight:")
+        print(straight_)
+
+    if len(pairs_) != 0 and pairs_[0] == 1:
+        confidence_turn = confidence_turn + 10
+
+    #if len(pairs_) == 0 and len(three_kind) == 0 and len(straight_) == 0:
+    print("High Card:")
+    print(high_card)
+    confidence_turn = confidence_turn + round(high_card[0] / 2)
+
+
+    print("Confidence:")
+    print(confidence_turn)
+
+
+    #Testing:
+    '''Hand:
+[['Four', 'Spades'], ['Ten', 'Diamonds'], ['Seven', 'Hearts'], ['Five', 'Clubs'], ['Four', 'Hearts'], ['Five', 'Hearts']]
+Pairs:
+[4, 5]
+High Card:
+[10]
+Confidence:
+183
+
+
+Hand:
+[['Five', 'Spades'], ['Ace', 'Hearts'], ['Seven', 'Hearts'], ['Five', 'Clubs'], ['Four', 'Hearts'], ['Five', 'Hearts']]
+High Card:
+[7]
+Confidence:
+4
+
+
+Hand:
+[['Six', 'Hearts'], ['King', 'Hearts'], ['Seven', 'Hearts'], ['Five', 'Clubs'], ['Four', 'Hearts'], ['Five', 'Hearts']]
+Straight
+Pairs:
+[5]
+Straight:
+['Straight']
+High Card:
+[13]
+Confidence:
+261'''
+
+
+def river():
+
+    print("----------------------------RIVER--------------------------------------")
+
+    river_array = []
+    r = random.randint(0,len(deck))
+    river_array.append(deck[r])
+    deck.remove(deck[r])
+
+    #print(flop_array)
+    c1_river = c1_turn + river_array
+    c2_river = c2_turn + river_array
+    c3_river = c3_turn + river_array
+
+    calculate_river(c1_river)
+    calculate_river(c2_river)
+    calculate_river(c3_river)
+
+
+def calculate_river(hand):
+    print("\n")
+    print("Hand:")
+    print(hand)
+
+
+    numeric_values = []
+    pairs_ = []
+    suit_values = []
+    straight_ = []
+    three_kind = []
+    high_card = []
+
+    for x,y in hand:
+        suit_values.append(y)
+
+    if suit_values.count("Hearts") >= 5 or suit_values.count("Spades") >= 5 or suit_values.count("Clubs") >= 5 or suit_values.count("Diamonds") >= 5:
+        print("Straight")
+        straight_.append("Straight")
+
+    if len(pairs_) != 0:
+        confidence_turn = confidence_turn + 50 + pairs_[0]
+        if len(pairs_) == 2:
+            confidence_turn = confidence_turn + 120 + pairs_[0]
+
+        print("Pairs:")
+        print(pairs_)
+    if len(three_kind) != 0 :
+        confidence_turn = confidence_turn + 150
+        print("Three of a Kind:")
+        print(three_kind)
+    if len(straight_) != 0:
+        confidence_turn = confidence_turn + 200
+        print("Straight:")
+        print(straight_)
+
+    if len(pairs_) != 0 and pairs_[0] == 1:
+        confidence_turn = confidence_turn + 10
+
+    #if len(pairs_) == 0 and len(three_kind) == 0 and len(straight_) == 0:
+    print("High Card:")
+    print(high_card)
+    confidence_turn = confidence_turn + round(high_card[0] / 2)
+
+
+    print("Confidence:")
+    print(confidence_turn)
+
+
+
+create_deck()
