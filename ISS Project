@@ -1,0 +1,65 @@
+#Approved libraries
+import csv
+from csv import reader
+import time
+from time import sleep
+import picamera
+import picamera.array
+from sense_emu import SenseHat
+
+sense = SenseHat()
+
+
+i = 1 #Count variable
+while i < 300: #Run a fixed amount of time to not exceed 3GB capacity
+    sense.clear(0,0,0)
+    with picamera.PiCamera() as camera:
+        camera.start_preview()
+        camera.capture('/home/pi/Desktop/image%s.jpg' % i) #Ordered numeric labelling of files
+        sleep(3)
+        camera.stop_preview() #Captures an image to later compare colour percentages with a visual check
+        camera.resolution = (64,64) #Create a 64bit image in order to analyse each pixel
+        with picamera.array.PiRGBarray(camera) as stream:
+            camera.capture(stream, format='rgb')
+            image = stream.array #RGB values: R, G, B (in that order)
+
+    image_display = []
+    red_array = []
+    green_array = []
+    blue_array = []
+
+    for x in image[0]: #X represents each RGB property in the image
+        red_array.append(x[0]) #Assign the correct elements to the correct arrays
+        green_array.append(x[1])
+        blue_array.append(x[2])
+        image_display.append(x)
+
+    red_total = 0
+    for r in red_array:
+        red_total = red_total + r #Produces an arbitrary result for amount of red pixels
+    green_total = 0
+    for g in green_array:
+        green_total = green_total + g #Green
+    blue_total = 0
+    for b in blue_array:
+        blue_total = blue_total + b #Blue
+
+    overall_total = red_total + green_total + blue_total #The overall 'light intensity' of an image
+    red_percentage = round((red_total / overall_total) * 100) #Create a percentage based on the total for each colour component
+    green_percentage = round((green_total / overall_total) * 100)
+    blue_percentage = round((blue_total / overall_total) * 100)
+
+    with open('Colours.csv','a+') as c:
+        colour_writer = csv.writer(c, delimiter = ' ')
+        colour_writer.writerow("Red: " + str(i) + " " + str(red_percentage))
+        colour_writer.writerow("Green: " + str(i) + " " + str(green_percentage))
+        colour_writer.writerow("Blue: " + str(i) + " " + str(blue_percentage))
+        #Represent data in a csv file to analyse
+
+    i = i + 1 #Iterate through
+
+    sleep(10)   #Expectation: 3GB of storage, each image ~1.3MB
+                #3 Hour flight taking picture every 10 seconds:
+                #6 images per minute, 1080 possible totals at 1.3MB each:
+                #300 Images as maximum to ensure safe finish.
+    sense.set_pixel(4,4,(255,0,0)) #Update LED matrix to show regular running.
