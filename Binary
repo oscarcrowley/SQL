@@ -1,0 +1,346 @@
+import tkinter
+from tkinter import *
+from tkinter import messagebox
+from tkinter import simpledialog
+from tkinter.scrolledtext import ScrolledText
+import random
+
+global left_bg
+left_bg = "#a3b9bf"
+global right_bg
+right_bg = "#d1e9f0"
+global font_
+font_ = "Arial"
+
+#--------------------------------------------------------------------------------#
+
+def encrypt(i):
+    word = i.upper()
+
+    alphabet = {"A":"00000001", "B":"00000010", "C":"00000011", "D":"00000100", "E":"00000101",
+                "F":"00000110", "G":"00000111", "H":"00001000", "I":"00001001", "J": "00001010",
+                "K":"00001011", "L":"00001100", "M":"00001101", "N":"00001110", "O":"00001111",
+                "P":"00010000", "Q":"00010001", "R":"00010010", "S":"00010011", "T":"00010100",
+                "U":"00010101", "V":"00010110", "W":"00010111", "X":"00011000", "Y":"00011001",
+                "Z":"00011010", " ":" "
+    }
+
+    binary_string = ""
+
+    for each_character in word:
+        binary_string = binary_string + str(alphabet[each_character])
+
+    print(binary_string)
+    message_box = messagebox.showinfo("Encrypted Message:", binary_string)
+
+    message_box = messagebox.askyesno("Encryption", "Would you like to save this file?", parent=binary_window)
+    if message_box == True:
+        filehandle = open("Binary.txt","w")
+        filehandle.write(binary_string)
+        filehandle.write("\n")
+        filehandle.close()
+
+
+#--------------------------------------------------------------------------------#
+
+def decrypt(i):
+    sequence = i
+
+    count = 0
+
+    total_number_of_letters = int(len(sequence) / 8)
+
+    start = 0
+    end = 8
+    words = []
+    spaces = []
+
+
+    space_char = 0 #Space appears after this character
+    for i in sequence:
+        if i == "0" or i == "1":
+            space_char = space_char + 1
+
+        if i == " ":
+            #print("Space at: ")
+            #print(int(space_char/8))
+            spaces.append(int(space_char/8))
+
+
+
+    new_sequence = (sequence.replace(" ", ""))
+
+
+    for i in range(0,total_number_of_letters):
+        #print(sequence[start:end])
+        total = 0
+
+        if new_sequence[end-1] == "1":
+            total = total + 1
+
+        if new_sequence[end-2] == "1":
+            total = total + 2
+
+        if new_sequence[end-3] == "1":
+            total = total + 4
+
+        if new_sequence[end-4] == "1":
+            total = total + 8
+
+        if new_sequence[end-5] == "1":
+            total = total + 16
+
+        if new_sequence[end-6] == "1":
+            total = total + 32
+
+        if new_sequence[end-7] == "1":
+            total = total + 64
+
+        if new_sequence[end-8] == "1":
+            total = total + 128
+
+        #print(total)
+        alphabet = {1:"A", 2:"B", 3:"C", 4:"D", 5:"E",
+                    6:"F", 7:"G", 8:"H", 9:"I", 10:"J",
+                    11:"K", 12:"L", 13:"M", 14:"N", 15:"O",
+                    16:"P", 17:"Q", 18:"R", 19:"S", 20:"T",
+                    21:"U", 22:"V", 23:"W", 24:"X", 25:"Y", 26:"Z", " ":""
+                    }
+
+        words.append(alphabet[total])
+
+        start = start + 8
+        end = end + 8
+        total = 0
+
+
+    message = ""
+    i = 1
+    for char in words:
+        message = message + char
+        if i in spaces:
+            message = message + " "
+        i = i + 1
+
+    #print(i)
+
+
+
+    #print(message)
+    message_box = messagebox.showinfo("Decrypted Message:", message)
+
+
+#--------------------------------------------------------------------------------#
+
+
+def CCencrypt(i):
+
+    print(i)
+    number_key = simpledialog.askstring("CC Key", "Please enter a key", parent=binary_window)
+
+
+    letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+
+    #number_key = random.randint(2,20)
+    letter_position_old = []
+    for chars in i.upper():
+        #print(letters.index(chars)) #finds position of letter
+        if chars != " ":
+            letter_position_old.append(letters.index(chars))
+
+    #print(letter_position_old)
+    print("Caesar Cipher + " + str(number_key))
+
+    letter_position_new = []
+    for pos in letter_position_old:
+
+        new_pos = (pos+int(number_key)-1)
+        if new_pos >= 25:
+            new_pos = new_pos - 26
+        letter_position_new.append(new_pos)
+
+
+
+
+
+    print(letter_position_new)
+
+    new_word = []
+
+    for pos in letter_position_new:
+        #print(letters[pos+1])
+        new_word.append(letters[pos+1])
+
+    new_word_string = ""
+    for char in new_word:
+        new_word_string = new_word_string + char
+    print(new_word_string)
+
+    message_box = messagebox.showinfo("Decrypted Message:", new_word_string)
+
+
+
+#--------------------------------------------------------------------------------#
+
+
+def CCdecrypt(j):
+    #print(j)
+
+    number_key = simpledialog.askstring("CC Key", "Please enter the key", parent=binary_window)
+
+    letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+
+    letter_position_old = []
+    for chars in j.upper():
+        #print((letters.index(chars))+1)
+        letter_position_old.append((letters.index(chars))+1)
+
+    print(letter_position_old)
+
+    letter_position_new = []
+    for pos in letter_position_old:
+        letter_position_new.append(pos - int(number_key))
+
+
+
+    print(letter_position_new)
+
+    new_word = []
+    for pos in letter_position_new:
+        #print(letters[pos-1])
+        new_word.append(letters[pos-1])
+
+    new_word_string = ""
+    for char in new_word:
+        new_word_string = new_word_string + char
+    print(new_word_string)
+
+
+    message_box = messagebox.showinfo("Decrypted Message:", new_word_string)
+
+#--------------------------------------------------------------------------------#
+
+binary_window = tkinter.Tk()
+binary_window.title("Binary Encryption")
+binary_window.geometry("300x550")
+binary_window.config(bg=left_bg)
+
+#binaryFrame = Frame(width=200, height=200, bg="", colormap="new")
+#binaryFrame.pack()
+
+
+
+
+def enter_encrypt_message():
+    message_box = simpledialog.askstring("Enter Message", "Enter message to encrypt", parent=binary_window)
+    encrypt(message_box)
+
+def enter_decrypt_message():
+    message_box = simpledialog.askstring("Enter Message", "Enter message to decrypt", parent=binary_window)
+    decrypt(message_box)
+
+def enter_encrypt_message_2():
+    encrypt(entry.get())
+
+def enter_decrypt_message_2():
+    decrypt(entry.get())
+
+def clear_text():
+    entry.delete(0,len(entry.get()))
+    CCentry.delete(0,len(CCentry.get()))
+
+def CcipherEncrypt():
+    CCencrypt(CCentry.get())
+
+def CcipherDecrypt():
+    CCdecrypt(CCentry.get())
+
+def generateKey():
+    global key
+    key = 3
+    key_check = True
+
+
+def exit():
+    binary_window.destroy()
+
+titleLabelOne = tkinter.Label(binary_window, text="Binary Encryption", bg=left_bg)
+titleLabelOne.pack()
+
+entry = tkinter.Entry(binary_window, width=40)
+entry.pack(pady=10)
+
+encrypt_button = tkinter.Button(binary_window, text="Encrypt", width=10, height=1, command=enter_encrypt_message_2, bg=right_bg)
+encrypt_button.pack()
+
+decrypt_button = tkinter.Button(binary_window, text="Decrypt", width=10, height=1, command=enter_decrypt_message_2, bg=right_bg)
+decrypt_button.pack()
+
+#clear_button = tkinter.Button(binary_window, text="Clear", width=10, height=1, command=clear_text)
+#clear_button.pack()
+
+#exit_button = tkinter.Button(binary_window, text="Exit", width=10, height=1, command=exit)
+#exit_button.pack(pady=20)
+
+
+
+
+separator = Frame(height=2, bd=1, relief=SUNKEN)
+separator.pack(fill=X, padx=5, pady=15)
+
+
+
+titleLabelTwo = tkinter.Label(binary_window, text="Ceaser Cypher Encryption", bg=left_bg)
+titleLabelTwo.pack()
+
+CCentry = tkinter.Entry(binary_window, width=40)
+CCentry.pack(pady=10)
+
+#generate_key_button = tkinter.Button(CC_window, text="Generate Key", width=20, height=1, command=generateKey)
+#generate_key_button.pack()
+
+CC_button_encrypt = tkinter.Button(binary_window, text="Encrypt", width=10, height=1, command=CcipherEncrypt, bg=right_bg)
+CC_button_encrypt.pack()
+
+CC_button_decrypt = tkinter.Button(binary_window, text="Decrypt", width=10, height=1, command=CcipherDecrypt, bg=right_bg)
+CC_button_decrypt.pack()
+
+
+
+separator = Frame(height=2, bd=1, relief=SUNKEN)
+separator.pack(fill=X, padx=5, pady=15)
+
+
+OC_encrypt = tkinter.Label(binary_window, text="Test", bg=left_bg)
+OC_encrypt.pack()
+
+OC_entry = tkinter.Entry(binary_window, width=40)
+OC_entry.pack(pady=10)
+
+c = Checkbutton(binary_window, text="Generate Key", variable=IntVar(), bg=left_bg)
+c.pack()
+
+OC_button_encrypt = tkinter.Button(binary_window, text="Encrypt", width=10, height=1, command=CcipherEncrypt, bg=right_bg)
+OC_button_encrypt.pack()
+
+CC_button_decrypt = tkinter.Button(binary_window, text="Decrypt", width=10, height=1, command=CcipherDecrypt, bg=right_bg)
+CC_button_decrypt.pack()
+
+separator = Frame(height=2, bd=1, relief=SUNKEN)
+separator.pack(fill=X, padx=5, pady=15)
+
+
+clear_button = tkinter.Button(binary_window, text="Clear", width=10, height=1, command=clear_text, bg=right_bg)
+clear_button.pack(pady=5)
+
+
+exit_button = tkinter.Button(binary_window, text="Exit", width=10, height=1, command=exit, bg=right_bg)
+exit_button.pack()
+
+binary_window.mainloop()
+
+
+
+
+
+
