@@ -1,0 +1,251 @@
+#Encrypting Passwords to store into a database
+import sqlite3
+import base64
+import tkinter.ttk
+from tkinter import *
+from tkinter import messagebox
+from datetime import date
+
+global left_bg
+left_bg = "#a3b9bf"
+global right_bg
+right_bg = "#d1e9f0"
+global font_
+font_ = "Arial"
+
+
+def quit(window):
+    window.destroy()
+
+def back():
+    succ_login_screen_divide.pack_forget()
+    init_first_frame()
+
+def succ_log_in():
+    screen_divide.pack_forget()
+
+    root_window.title("Welcome")
+
+    global succ_login_screen_divide
+    succ_login_screen_divide = PanedWindow(root_window, orient=HORIZONTAL)
+    succ_login_screen_divide.pack(fill=BOTH, expand=4)
+
+    left = Label(succ_login_screen_divide, bg=left_bg)#, text="top pane")
+    succ_login_screen_divide.add(left)
+
+    right = Label(succ_login_screen_divide, bg=right_bg)#, text="bottom pane")
+    succ_login_screen_divide.add(right)
+
+    quit_button = tkinter.Button(left, text="Log Out", bg=left_bg, command=back, font=font_, width=10)
+    quit_button.pack(side="bottom", fill="x")
+
+
+def init():
+    global root_window
+    root_window = tkinter.Tk()
+
+    today = date.today()
+    root_window.title(today)
+    root_window.geometry("500x300")
+    root_window.configure(bg="grey")
+
+    #Global attributes
+    global left_bg
+    left_bg = "#a3b9bf"
+    global right_bg
+    right_bg = "#d1e9f0"
+    global font_
+    font_ = "Arial"
+
+def init_first_frame():
+
+    #Screen Divide
+    global screen_divide
+    screen_divide = PanedWindow(root_window, orient=HORIZONTAL)
+    screen_divide.pack(fill=BOTH, expand=4)
+
+    left = Label(screen_divide, bg=left_bg)#, text="top pane")
+    screen_divide.add(left)
+
+    right = Label(screen_divide, bg=right_bg)#, text="bottom pane")
+    screen_divide.add(right)
+
+    #Left: Log In
+    main_login_label = tkinter.Label(left, text="Log In", bg=left_bg, font=font_)
+    main_login_label.pack()
+
+    username_label = tkinter.Label(left, text="Enter Username", bg=left_bg, font=font_)
+    username_label.pack(pady=10)
+
+    global username_entry
+    username_entry = tkinter.Entry(left)
+    username_entry.pack()
+
+    password_label = tkinter.Label(left, text="Enter Password", bg=left_bg, font=font_)
+    password_label.pack()
+
+    global password_entry
+    password_entry = tkinter.Entry(left, show="*")
+    password_entry.pack()
+
+    login_button = tkinter.Button(left, text="Log In", bg=left_bg, font=font_, command=SQL_login)
+    login_button.pack()
+
+    #Right: Register
+    main_register_label = tkinter.Label(right, text="Register", bg=right_bg, font=font_)
+    main_register_label.pack()
+
+    register_firstname_label = tkinter.Label(right, text="Enter First Name:", bg=right_bg, font=font_)
+    register_firstname_label.pack()
+
+    global register_firstname_entry
+    register_firstname_entry = tkinter.Entry(right)
+    register_firstname_entry.pack()
+
+    register_surname_label = tkinter.Label(right, text="Enter Second Name:", bg=right_bg, font=font_)
+    register_surname_label.pack()
+
+    global register_surname_entry
+    register_surname_entry = tkinter.Entry(right)
+    register_surname_entry.pack()
+
+    register_username_label = tkinter.Label(right, text="Create a Username:", bg=right_bg, font=font_)
+    register_username_label.pack()
+
+    global register_username_entry
+    register_username_entry = tkinter.Entry(right)
+    register_username_entry.pack()
+
+    register_password_label = tkinter.Label(right, text="Create a Password:", bg=right_bg, font=font_)
+    register_password_label.pack()
+
+    global register_password_entry
+    register_password_entry = tkinter.Entry(right)
+    register_password_entry.pack()
+
+    register_confirm_password_label = tkinter.Label(right, text="Confirm Password:", bg=right_bg, font=font_)
+    register_confirm_password_label.pack()
+
+    global register_confirm_password_entry
+    register_confirm_password_entry = tkinter.Entry(right)
+    register_confirm_password_entry.pack()
+
+    register_button = tkinter.Button(right, text="Register", bg=right_bg, font=font_)
+    register_button.pack()
+
+    quit_button = tkinter.Button(left, text="Quit", bg=left_bg, command= lambda: quit(root_window), font=font_, width=10)
+    quit_button.pack(side="bottom", fill="x")
+
+    root_window.mainloop()
+
+
+def write_to_database():
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users
+            (id INT, name TEXT, surname TEXT, password TEXT)''')
+
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(101,"bob","jones",encrypt_password("password1")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(102,"sarah","smith",encrypt_password("password2")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(103,"harry","green",encrypt_password("password3")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(104,"jessica","boone",encrypt_password("password4")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(105,"leah","navada",encrypt_password("password5")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(106,"thomas","hope",encrypt_password("password6")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(107,"james","aberdeen",encrypt_password("password7)")))
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(108,"mohammed","west",encrypt_password("password8)")))
+
+    db.commit()
+
+def add_to_database():
+
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+
+    query = "SELECT ID FROM users"
+    highest = 0
+    for row in cursor.execute(query):
+        if row[0] > highest:
+            highest = row[0]
+
+    id_entry = int(highest) + 1
+    print("Your ID is: ", str(id_entry))
+
+    name_entry = input("Enter First Name")
+    surname_entry = input("Enter Surname")
+    password_entry = input("Enter Password")
+
+    cursor.execute("INSERT OR IGNORE INTO users(id,name,surname,password) VALUES(?,?,?,?)",(id_entry,name_entry,surname_entry,(encrypt_password(password_entry))))
+
+    db.commit()
+
+
+def encrypt_password(password):
+    return str(base64.b64encode(password.encode("utf-8")))
+
+def decrypt_password(password):
+    return(base64.b64decode(encrypt_password(password)).decode("utf-8"))
+
+def delete_table():
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+
+    query = "DELETE FROM users"
+    cursor.execute(query)
+
+    db.commit()
+
+def show_table():
+    check_login()
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+
+    query = "SELECT * FROM users"
+    for row in cursor.execute(query):
+        print(row)
+
+    db.commit()
+
+def SQL_login():
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+
+    try:
+        #id_inp = input("Enter ID:")
+        global id_inp
+        id_inp = username_entry.get()
+        #username_entry
+        #pass_inp = input("Enter Password:")
+        pass_inp = password_entry.get()
+        #password_entry
+        enc_password = (encrypt_password(pass_inp))
+
+        if len(id_inp) == 0 or len(pass_inp) == 0:
+            print("Enter Credentials")
+        else:
+
+            login_query = '''SELECT * FROM users WHERE id = %s AND password = "%s"''' %(int(id_inp), enc_password)
+
+            cursor.execute(login_query)
+            row = cursor.fetchone()
+            if row == None:
+                print("Incorrect")
+            else:
+                print("Successful Login")
+                succ_log_in()
+
+    except KeyboardInterrupt:
+            print("Cancelled.")
+
+
+def reset_database():
+    db = sqlite3.connect('Security_test.db')
+    cursor = db.cursor()
+    delete_table()
+    write_to_database()
+    add_to_database()
+    query = "SELECT * FROM users"
+    for row in cursor.execute(query):
+        print(row)
+
+init()
+init_first_frame()
