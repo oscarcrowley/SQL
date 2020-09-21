@@ -1,0 +1,216 @@
+import tkinter
+from datetime import date
+import csv
+import sqlite3
+import tkinter.ttk
+from tkinter import *
+from tkinter import messagebox
+
+def back(window):
+    window.destroy()
+
+def init():
+    global root_window
+    root_window = tkinter.Tk()
+
+    today = date.today()
+    root_window.title(today)
+    root_window.geometry("500x300")
+    root_window.configure(bg="grey")
+
+    #Global attributes
+    global left_bg
+    left_bg = "#a3b9bf"
+    global right_bg
+    right_bg = "#d1e9f0"
+    global font_
+    font_ = "Arial"
+
+    #Screen Divide
+    screen_divide = PanedWindow(orient=HORIZONTAL)
+    screen_divide.pack(fill=BOTH, expand=4)
+
+    left = Label(screen_divide, bg=left_bg)#, text="top pane")
+    screen_divide.add(left)
+
+    right = Label(screen_divide, bg=right_bg)#, text="bottom pane")
+    screen_divide.add(right)
+
+    #Left: Log In
+    main_login_label = tkinter.Label(left, text="Log In", bg=left_bg, font=font_)
+    main_login_label.pack()
+
+    username_label = tkinter.Label(left, text="Enter Username", bg=left_bg, font=font_)
+    username_label.pack(pady=10)
+
+    global username_entry
+    username_entry = tkinter.Entry(left)
+    username_entry.pack()
+
+    password_label = tkinter.Label(left, text="Enter Password", bg=left_bg, font=font_)
+    password_label.pack()
+
+    global password_entry
+    password_entry = tkinter.Entry(left, show="*")
+    password_entry.pack()
+
+    login_button = tkinter.Button(left, text="Log In", bg=left_bg, font=font_, command=login)
+    login_button.pack()
+
+    #Right: Register
+    main_register_label = tkinter.Label(right, text="Register", bg=right_bg, font=font_)
+    main_register_label.pack()
+
+    register_firstname_label = tkinter.Label(right, text="Enter First Name:", bg=right_bg, font=font_)
+    register_firstname_label.pack()
+
+    global register_firstname_entry
+    register_firstname_entry = tkinter.Entry(right)
+    register_firstname_entry.pack()
+
+    register_surname_label = tkinter.Label(right, text="Enter Second Name:", bg=right_bg, font=font_)
+    register_surname_label.pack()
+
+    global register_surname_entry
+    register_surname_entry = tkinter.Entry(right)
+    register_surname_entry.pack()
+
+    register_username_label = tkinter.Label(right, text="Create a Username:", bg=right_bg, font=font_)
+    register_username_label.pack()
+
+    global register_username_entry
+    register_username_entry = tkinter.Entry(right)
+    register_username_entry.pack()
+
+    register_password_label = tkinter.Label(right, text="Create a Password:", bg=right_bg, font=font_)
+    register_password_label.pack()
+
+    global register_password_entry
+    register_password_entry = tkinter.Entry(right)
+    register_password_entry.pack()
+
+    register_confirm_password_label = tkinter.Label(right, text="Confirm Password:", bg=right_bg, font=font_)
+    register_confirm_password_label.pack()
+
+    global register_confirm_password_entry
+    register_confirm_password_entry = tkinter.Entry(right)
+    register_confirm_password_entry.pack()
+
+    register_button = tkinter.Button(right, text="Register", bg=right_bg, font=font_, command=register)
+    register_button.pack()
+
+    quit_button = tkinter.Button(left, text="Quit", bg=left_bg, command= lambda: back(root_window), font=font_, width=10)
+    quit_button.pack(side="bottom", fill="x")
+
+    root_window.mainloop()
+
+
+def loginwindow():
+    global successful_login_window
+    successful_login_window = tkinter.Tk()
+    successful_login_window.title("Welcome")
+    successful_login_window.geometry("500x300")
+    successful_login_window.configure(bg="grey")
+
+    screen_divide = PanedWindow(orient=HORIZONTAL)
+    screen_divide.pack(fill=BOTH, expand=4)
+
+    left = Label(screen_divide, bg=left_bg)#, text="top pane")
+    screen_divide.add(left)
+
+    right = Label(screen_divide, bg=right_bg)#, text="bottom pane")
+    screen_divide.add(right)
+
+
+    successful_login_window.mainloop()
+
+
+
+def login():
+
+    username = username_entry.get()
+    password = password_entry.get()
+    with open("Member Details - Unit 5.csv","r") as csvfile:
+        reader = csv.reader(csvfile, delimiter=",")
+
+        for row in reader:
+            if (len(row) > 1):
+                check_username = row[2]
+                check_password = row[3]
+
+    if username == check_username and password == check_password:
+        print("Successful Log In")
+        loginwindow()
+
+    if username == "admin" and password == "root": #quality of life for testing
+        loginwindow()
+
+
+
+def register():
+    #Validation:
+    validity_ = 0
+
+    #First Name
+    firstname_valid_check = register_firstname_entry.get()
+    if firstname_valid_check.isalpha() and len(firstname_valid_check) != 0:
+        validity_ = validity_ + 1
+
+    #Second Name
+    secondname_valid_check = register_surname_entry.get()
+    if secondname_valid_check.isalpha() and len(secondname_valid_check) != 0:
+        validity_ = validity_ + 1
+
+    #Username
+    username_valid_check = register_username_entry.get()
+    if len(username_valid_check) != 0:
+        validity_ = validity_ + 1
+
+    #Password
+    password_valid_check = register_password_entry.get()
+    password_valid_check_confirm = register_confirm_password_entry.get()
+
+    password_check_number = False
+    password_check_capital = False
+    password_check_lower = False
+    password_check_length = False
+    password_check_verify = False
+    password_valid = 0 #1 when valid
+
+    if len(password_valid_check) >= 8:
+        password_check_length = True
+
+    for char in password_valid_check:
+        if char.isdigit():
+            password_check_number = True
+        if char.isupper():
+            password_check_capital = True
+        if char.islower():
+            password_check_lower = True
+
+    if password_valid_check == password_valid_check_confirm:
+        password_check_verify = True
+
+
+    if password_check_number == True and password_check_capital == True and password_check_lower == True and password_check_length == True and password_check_verify == True:
+        print("Valid Password")
+        password_valid = 1 #1 when valid
+
+
+    if password_valid == 1 and validity_ == 3:
+        print("All Valid Details")
+
+        with open("Member Details - Unit 5.csv","a+") as csvfile:
+            fieldnames = ['first_name', 'surname', 'username', 'password']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            writer.writerow({'first_name': register_firstname_entry.get(),
+                            'surname':register_surname_entry.get(),
+                            'username':register_username_entry.get(),
+                            'password':register_password_entry.get()})
+
+
+
+
+
+init()
